@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Weather Widget</title>
+  <style>
+    /* Global Styles */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Arial', sans-serif;
+    }
+
+    body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      background: linear-gradient(135deg, #6a11cb, #2575fc);
+    }
+
+    /* Weather Widget Container */
+    .weather-widget {
+      width: 300px;
+      padding: 20px;
+      background: linear-gradient(135deg, #ffffff, #d5d5d5);
+      border-radius: 20px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .weather-widget:hover {
+      transform: translateY(-10px);
+      box-shadow: 0 12px 26px rgba(0, 0, 0, 0.3);
+    }
+
+    /* Header Section */
+    .weather-header {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .weather-header h1 {
+      font-size: 24px;
+      color: #333;
+    }
+
+    .weather-header p {
+      font-size: 16px;
+      color: #777;
+    }
+
+    /* Weather Icon */
+    .weather-icon {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+
+    .weather-icon img {
+      width: 100px;
+      height: 100px;
+      animation: fadeIn 2s ease-in-out;
+    }
+
+    /* Weather Info */
+    .weather-info {
+      text-align: center;
+      color: #333;
+    }
+
+    .weather-info .temperature {
+      font-size: 36px;
+      font-weight: bold;
+    }
+
+    .weather-info .condition {
+      font-size: 18px;
+      color: #555;
+    }
+
+    /* Button */
+    .refresh-btn {
+      display: block;
+      margin: 20px auto 0;
+      padding: 10px 15px;
+      background: linear-gradient(135deg, #6a11cb, #2575fc);
+      color: #fff;
+      font-size: 16px;
+      font-weight: bold;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background 0.3s ease, transform 0.3s ease;
+    }
+
+    .refresh-btn:hover {
+      background: linear-gradient(135deg, #2575fc, #6a11cb);
+      transform: scale(1.05);
+    }
+
+    /* Animations */
+    @keyframes fadeIn {
+      0% {
+        opacity: 0;
+        transform: scale(0.8);
+      }
+      100% {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="weather-widget">
+    <div class="weather-header">
+      <h1>Weather</h1>
+      <p id="location">Fetching location...</p>
+    </div>
+    <div class="weather-icon">
+      <img id="weatherIcon" src="" alt="Weather Icon">
+    </div>
+    <div class="weather-info">
+      <div class="temperature" id="temperature">--°C</div>
+      <div class="condition" id="condition">Loading...</div>
+    </div>
+    <button class="refresh-btn" onclick="fetchWeather()">Refresh</button>
+  </div>
+
+  <script>
+    // API key for fetching weather data
+    const apiKey = 'YOUR_API_KEY_HERE'; // Replace with your own API key or use a free service.
+
+    // Default Location
+    let latitude = 0;
+    let longitude = 0;
+
+    // Function to fetch weather data
+    async function fetchWeather() {
+      try {
+        // Update location
+        document.getElementById('location').textContent = 'Fetching location...';
+
+        // Get user location
+        if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition(async (position) => {
+            latitude = position.coords.latitude;
+            longitude = position.coords.longitude;
+
+            document.getElementById('location').textContent = `Lat: ${latitude.toFixed(2)}, Lon: ${longitude.toFixed(2)}`;
+
+            // Fetch weather data
+            const response = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true`);
+            const data = await response.json();
+
+            // Update weather info on the UI
+            const weather = data.current_weather;
+            document.getElementById('temperature').textContent = `${weather.temperature}°C`;
+            document.getElementById('condition').textContent = weather.weathercode === 1 ? 'Clear' : 'Cloudy'; // Example logic
+            document.getElementById('weatherIcon').src = weather.weathercode === 1 ? 'https://icons.iconarchive.com/icons/oxygen-icons.org/oxygen/256/Status-weather-clear-icon.png' : 'https://icons.iconarchive.com/icons/oxygen-icons.org/oxygen/256/Status-weather-clouds-icon.png';
+          });
+        } else {
+          document.getElementById('location').textContent = 'Geolocation not available.';
+        }
+      } catch (error) {
+        document.getElementById('location').textContent = 'Error fetching weather data.';
+        console.error(error);
+      }
+    }
+
+    // Fetch weather on load
+    fetchWeather();
+  </script>
+</body>
+</html>
